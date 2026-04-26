@@ -1,107 +1,100 @@
-# Agentiki Screening ML
+# Agentiki Screening MVP
 
-ML-слой для AI-скрининга кандидатов. Модуль не зависит от фронта и бека: его можно импортировать из Node API или запускать отдельным сервисом.
+MVP AI-скрининга резюме для массового подбора. Gemini извлекает факты и scoring-сигналы, а финальный score считает детерминированный ranker в коде. Модель не принимает решение о найме.
 
-## Что делает
-
-- парсит резюме в структурированный профиль кандидата;
-- генерирует 3-5 уточняющих вопросов под вакансию;
-- парсит ответы кандидата в сигналы для ранжирования;
-- считает временный rule-based fit score;
-- генерирует объяснение для HR;
-- возвращает нейтральный ответ для кандидата без раскрытия score.
-
-## Gemini
-
-По умолчанию используется `gemini-3-flash-preview`.
+## Запуск
 
 ```bash
+npm install
 cp .env.example .env
-export GEMINI_API_KEY=...
-export GEMINI_MODEL=gemini-3-flash-preview
+npm run dev
 ```
 
-Если `GEMINI_API_KEY` не задан, pipeline работает на mock-логике. Это удобно для фронта и бека, пока нет ключа или интернета.
+Dashboard: http://127.0.0.1:3000
 
-## Запуск демо
+Для работы с Gemini:
 
 ```bash
-npm run demo
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-3-flash-preview
 ```
 
-## Тесты
+Без `GEMINI_API_KEY` приложение работает на mock/demo-логике, чтобы можно было показывать продукт на хакатоне.
+
+## Команды
 
 ```bash
-npm test
+npm run dev   # HR dashboard + API
+npm run demo  # печатает RankResult demo-кандидата
+npm test      # unit tests для rankCandidate
 ```
 
-## Использование из backend
+## Что реализовано
 
-```js
-import { runScreeningPipeline } from "./src/ml/index.js";
+- PDF upload и извлечение текста через `pdf-parse`.
+- `parseResumeWithGemini(pdfText)` -> `CandidateProfile`.
+- `generateScreeningQuestions(vacancy, profile)` -> 3-5 вопросов.
+- `extractCandidateSignals(vacancy, profile, answers)` -> `CandidateSignals`.
+- Zod-валидация всех ответов Gemini.
+- Детерминированный `rankCandidate(vacancy, signals)` -> `RankResult`.
+- HR dashboard с заметными блоками:
+  - "Почему подходит"
+  - "Что проверить"
+  - evidence breakdown
+  - neutral candidate reply
 
-const result = await runScreeningPipeline({
-  vacancy: {
-    id: "intern-js-001",
-    title: "Стажер frontend-разработчик",
-    roleType: "internship",
-    mustHave: ["javascript", "react"],
-    niceToHave: ["typescript", "node"],
-    stopFactors: ["не готов к стажировке"]
-  },
-  resume: {
-    text: "Resume text here"
-  },
-  answers: {
-    q1: "Хочу развиваться во frontend",
-    q2: "Готов приступить сразу",
-    q3: "Есть проекты на React"
-  }
-});
-```
+## Файлы
 
-Если резюме приходит PDF-файлом:
+- `src/ml/types.ts` — TypeScript-контракты.
+- `src/ml/schemas.ts` — Zod-схемы и валидация.
+- `src/ml/prompts.ts` — Gemini prompts.
+- `src/ml/gemini.ts` — вызовы Gemini и validation guard.
+- `src/ml/ranker.ts` — deterministic ranker.
+- `src/ml/demoData.ts` — demo vacancy/profile/answers/signals.
+- `src/ml/pdf.ts` — извлечение текста из PDF.
+- `src/server.ts` — локальный API + static UI.
+- `public/` — простой HR Dashboard.
 
-```js
-const result = await runScreeningPipeline({
-  vacancy,
-  resume: {
-    file: {
-      mimeType: "application/pdf",
-      base64: "..."
-    }
-  }
-});
-```
+## API
 
-Без `answers` pipeline вернет статус `questions_ready` и список вопросов. С `answers` вернет `screening_completed`, `ranking`, `recruiterExplanation` и `candidateReply`.
+`GET /api/vacancy`
 
-## Контракт результата
+Возвращает demo vacancy.
 
-```js
+`POST /api/prepare-screening`
+
+```json
 {
-  status: "screening_completed",
-  candidateProfile: {},
-  questions: [],
-  candidateSignals: {},
-  ranking: {
-    score: 87,
-    category: "high_fit",
-    reasons: [],
-    risks: [],
-    matchedMustHave: [],
-    matchedNiceToHave: [],
-    modelVersion: "rules-v0.1"
-  },
-  recruiterExplanation: {},
-  candidateReply: {
-    title: "Спасибо, ответы получены",
-    message: "Рекрутер изучит анкету и свяжется с вами по дальнейшим шагам.",
-    exposeScore: false
-  }
+  "vacancy": {},
+  "pdfBase64": "...",
+  "pdfText": "optional text instead of PDF"
 }
 ```
 
-## Важное продуктовое ограничение
+Возвращает `CandidateProfile` и `ScreeningQuestion[]`.
 
-Кандидату не показываются score, категория и причины ранжирования. Эти данные доступны только HR, а финальное решение остается за рекрутером.
+`POST /api/rank-candidate`
+
+```json
+{
+  "vacancy": {},
+  "profile": {},
+  "answers": [
+    { "questionId": "q1", "answer": "..." }
+  ]
+}
+```
+
+Возвращает `signals` и `rankResult`.
+
+`POST /api/demo`
+
+Возвращает готовый demo `RankResult` без Gemini и PDF.
+
+## Product Guardrails
+
+- Не используем возраст, пол, фото, внешность, национальность, религию, семейное положение, здоровье и похожие protected attributes.
+- Gemini только извлекает факты, сигналы, преимущества, риски и нейтральный ответ.
+- Финальный score и tier считает обычная функция.
+- Кандидату не показываются score, tier и причины ранжирования.
+- Финальное решение всегда остается за HR.

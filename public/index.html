@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Screening MVP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">HR Dashboard</p>
+          <h1>AI-скрининг резюме</h1>
+        </div>
+        <span class="decision-pill">HR makes final decision</span>
+      </section>
+
+      <section class="grid">
+        <aside class="panel vacancy-panel">
+          <h2>Вакансия</h2>
+          <div id="vacancyCard" class="vacancy-card">Загрузка...</div>
+          <button id="runDemoBtn" class="primary">Run demo</button>
+        </aside>
+
+        <section class="panel">
+          <h2>Pipeline</h2>
+          <ol id="statusList" class="status-list">
+            <li data-step="parsing">Parsing resume</li>
+            <li data-step="questions">Generating questions</li>
+            <li data-step="answers">Waiting answers</li>
+            <li data-step="signals">Extracting signals</li>
+            <li data-step="ranking">Ranking</li>
+          </ol>
+
+          <div class="upload-row">
+            <input id="pdfInput" type="file" accept="application/pdf" />
+            <button id="prepareBtn">Upload PDF & generate questions</button>
+          </div>
+          <textarea id="resumeText" placeholder="Для быстрого теста можно вставить текст резюме вместо PDF"></textarea>
+          <p id="errorBox" class="error" hidden></p>
+        </section>
+      </section>
+
+      <section id="questionsPanel" class="panel" hidden>
+        <h2>Вопросы кандидату</h2>
+        <div id="questionsList" class="questions"></div>
+        <button id="rankBtn" class="primary">Rank candidate</button>
+      </section>
+
+      <section id="resultPanel" class="result-grid" hidden>
+        <article class="panel candidate-card">
+          <div class="candidate-header">
+            <div>
+              <p class="eyebrow">Candidate</p>
+              <h2 id="candidateName">-</h2>
+            </div>
+            <div class="score-box">
+              <span id="finalScore">0</span>
+              <small>score</small>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <span id="tierBadge" class="badge"></span>
+            <span id="actionBadge" class="badge muted"></span>
+          </div>
+
+          <p id="fitSummary" class="summary"></p>
+          <p id="hrExplanation" class="hr-explanation"></p>
+        </article>
+
+        <article class="panel positive">
+          <h2>Почему подходит</h2>
+          <ul id="advantagesList"></ul>
+        </article>
+
+        <article class="panel warning">
+          <h2>Что проверить</h2>
+          <ul id="concernsList"></ul>
+        </article>
+
+        <article class="panel">
+          <h2>Evidence breakdown</h2>
+          <div id="evidenceList" class="evidence-list"></div>
+        </article>
+
+        <article class="panel">
+          <h2>Missing info</h2>
+          <ul id="missingInfoList"></ul>
+        </article>
+
+        <article class="panel">
+          <h2>Alternative roles</h2>
+          <ul id="alternativeRolesList"></ul>
+        </article>
+
+        <article class="panel candidate-reply">
+          <h2>Neutral candidate reply</h2>
+          <p id="candidateReply"></p>
+        </article>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -4,10 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "demo": "node src/ml/demo.js",
-    "test": "node --test"
+    "dev": "node --env-file-if-exists=.env --experimental-transform-types src/server.ts",
+    "demo": "node --experimental-transform-types src/ml/demo.ts",
+    "test": "node --experimental-transform-types --test test/*.test.ts"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=25"
+  },
+  "dependencies": {
+    "pdf-parse": "^2.4.5",
+    "zod": "^4.3.6"
   }
 }
