@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import {
   CandidateProfileSchema,
-  CandidateSignalsSchema,
+  GeminiCandidateSignalsSchema,
   ScreeningQuestionsSchema,
   parseWithSchema,
   toGeminiJsonSchema
@@ -127,7 +127,7 @@ export async function extractCandidateSignals(
 
   const signals = await generateValidatedJson({
     prompt: candidateSignalsPrompt(vacancy, profile, answers),
-    schema: CandidateSignalsSchema,
+    schema: GeminiCandidateSignalsSchema,
     label: "CandidateSignals"
   });
 

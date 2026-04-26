@@ -21,10 +21,7 @@ export type Vacancy = {
     experience: number;
     skills: number;
     schedule: number;
-    location: number;
     motivation: number;
-    availability: number;
-    communication: number;
   };
   dealBreakers: string[];
 };

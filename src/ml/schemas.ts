@@ -24,10 +24,7 @@ export const VacancySchema = z.object({
     experience: z.number(),
     skills: z.number(),
     schedule: z.number(),
-    location: z.number(),
-    motivation: z.number(),
-    availability: z.number(),
-    communication: z.number()
+    motivation: z.number()
   }),
   dealBreakers: z.array(z.string())
 });
@@ -116,6 +113,10 @@ export const CandidateSignalsSchema = z.object({
     "reject_or_route_elsewhere"
   ]),
   neutralCandidateReply: z.string()
+});
+
+export const GeminiCandidateSignalsSchema = CandidateSignalsSchema.omit({
+  neutralCandidateReply: true
 });
 
 export const RankResultSchema = z.object({

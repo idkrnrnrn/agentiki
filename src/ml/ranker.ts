@@ -16,8 +16,16 @@ const signalLabels: Record<SignalName, string> = {
   communication_quality: "Коммуникация"
 };
 
+const rankerLabels = {
+  experience: "Опыт",
+  skills: "Навыки",
+  schedule: "График",
+  motivation: "Мотивация"
+} as const;
+
 export function rankCandidate(vacancy: Vacancy, signals: CandidateSignals): RankResult {
-  const evidence = buildEvidence(signals.signals);
+  const components = buildWeightedComponents(signals);
+  const evidence = buildEvidence(components);
 
   // Hard gate: если must-have не пройден, кандидат не должен получать высокий score
   // даже при хороших вторичных сигналах. Это делает ранжирование объяснимым для HR.
@@ -90,29 +98,52 @@ export function rankCandidate(vacancy: Vacancy, signals: CandidateSignals): Rank
 
 function calculateWeightedScore(vacancy: Vacancy, signals: CandidateSignals): number {
   const weights = vacancy.weights;
+  const components = buildWeightedComponents(signals);
   const weighted =
-    weights.experience * signals.signals.experience_match.score +
-    weights.skills * signals.signals.skills_match.score +
-    weights.schedule * signals.signals.schedule_match.score +
-    weights.location * signals.signals.location_match.score +
-    weights.motivation * signals.signals.motivation.score +
-    weights.availability * signals.signals.availability.score +
-    weights.communication * signals.signals.communication_quality.score;
+    weights.experience * components.experience.score +
+    weights.skills * components.skills.score +
+    weights.schedule * components.schedule.score +
+    weights.motivation * components.motivation.score;
 
   const totalWeight =
     weights.experience +
     weights.skills +
     weights.schedule +
-    weights.location +
-    weights.motivation +
-    weights.availability +
-    weights.communication;
+    weights.motivation;
 
   if (totalWeight <= 0) {
     return 0;
   }
 
   return Math.round((weighted / totalWeight) * 100);
+}
+
+function buildWeightedComponents(signals: CandidateSignals): Record<keyof Vacancy["weights"], SignalScore> {
+  const s = signals.signals;
+
+  return {
+    experience: s.experience_match,
+    skills: {
+      score: roundScore(s.skills_match.score * 0.8 + s.communication_quality.score * 0.2),
+      evidence: [
+        s.skills_match.evidence,
+        `Коммуникация учтена как часть навыков: ${s.communication_quality.evidence}`
+      ].join(" ")
+    },
+    schedule: {
+      score: roundScore(
+        s.schedule_match.score * 0.45 +
+          s.availability.score * 0.35 +
+          s.location_match.score * 0.2
+      ),
+      evidence: [
+        s.schedule_match.evidence,
+        `Доступность: ${s.availability.evidence}`,
+        `Локация: ${s.location_match.evidence}`
+      ].join(" ")
+    },
+    motivation: s.motivation
+  };
 }
 
 function chooseTier(score: number): RankResult["tier"] {
@@ -151,9 +182,9 @@ function weakSignalConcerns(signals: CandidateSignals): string[] {
     .map(([name, signal]) => `${signalLabels[name as SignalName]}: ${signal.evidence}`);
 }
 
-function buildEvidence(signals: Record<SignalName, SignalScore>): RankResult["evidence"] {
+function buildEvidence(signals: Record<keyof Vacancy["weights"], SignalScore>): RankResult["evidence"] {
   return Object.entries(signals).map(([name, signal]) => ({
-    label: signalLabels[name as SignalName],
+    label: rankerLabels[name as keyof Vacancy["weights"]],
     score: signal.score,
     evidence: signal.evidence
   }));
@@ -209,4 +240,8 @@ function compactUnique(items: string[]): string[] {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function roundScore(value: number): number {
+  return Math.round(value * 100) / 100;
 }

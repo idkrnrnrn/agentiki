@@ -78,6 +78,8 @@ npm test      # unit tests для rankCandidate
 
 ## API
 
+Подробная документация для backend: [docs/API.md](docs/API.md).
+
 `GET /api/vacancy`
 
 Возвращает demo vacancy.
@@ -113,10 +115,29 @@ npm test      # unit tests для rankCandidate
 
 Возвращает готовый demo `RankResult` без Gemini и PDF.
 
+## Скоринг
+
+HR настраивает только 4 веса:
+
+```json
+{
+  "experience": 0.25,
+  "skills": 0.30,
+  "schedule": 0.30,
+  "motivation": 0.15
+}
+```
+
+Внутри ранкера:
+
+- `communication_quality` добавляется к `skills`;
+- `availability` и `location_match` добавляются к `schedule`;
+- итоговый `RankResult.evidence` показывает 4 понятных блока: опыт, навыки, график, мотивация.
+
 ## Product Guardrails
 
 - Не используем возраст, пол, фото, внешность, национальность, религию, семейное положение, здоровье и похожие protected attributes.
-- Gemini только извлекает факты, сигналы, преимущества, риски и нейтральный ответ.
+- Gemini только извлекает факты, сигналы, преимущества и риски. Нейтральный ответ кандидату подставляется шаблоном в коде.
 - Финальный score и tier считает обычная функция.
 - Кандидату не показываются score, tier и причины ранжирования.
 - Финальное решение всегда остается за HR.

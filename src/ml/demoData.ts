@@ -32,13 +32,10 @@ export const demoVacancy: Vacancy = {
   location: "Москва, рядом с метро",
   salary: "от 65 000 рублей",
   weights: {
-    experience: 0.2,
-    skills: 0.18,
-    schedule: 0.16,
-    location: 0.12,
-    motivation: 0.12,
-    availability: 0.14,
-    communication: 0.08
+    experience: 0.25,
+    skills: 0.3,
+    schedule: 0.3,
+    motivation: 0.15
   },
   dealBreakers: [
     "не готов к сменному графику",

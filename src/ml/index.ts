@@ -15,6 +15,7 @@ export {
   CandidateAnswersSchema,
   CandidateProfileSchema,
   CandidateSignalsSchema,
+  GeminiCandidateSignalsSchema,
   RankResultSchema,
   ScreeningQuestionsSchema,
   VacancySchema
