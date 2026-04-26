@@ -1,6 +1,7 @@
 import {
   CandidateAnswersSchema,
   CandidateProfileSchema,
+  ScreeningQuestionsSchema,
   VacancySchema,
   parseWithSchema
 } from "./schemas.ts";
@@ -15,6 +16,7 @@ import type {
   CandidateProfile,
   PipelineQuestionResult,
   PipelineRankResult,
+  ScreeningQuestion,
   Vacancy
 } from "./types.ts";
 
@@ -39,22 +41,26 @@ export async function prepareScreeningQuestions({
 export async function rankScreenedCandidate({
   vacancy,
   profile,
+  questions,
   answers
 }: {
   vacancy: Vacancy;
   profile: CandidateProfile;
+  questions?: ScreeningQuestion[];
   answers: CandidateAnswer[];
 }): Promise<PipelineRankResult> {
   const validVacancy = parseWithSchema(VacancySchema, vacancy, "Vacancy");
   const validProfile = parseWithSchema(CandidateProfileSchema, profile, "CandidateProfile");
   const validAnswers = parseWithSchema(CandidateAnswersSchema, answers, "CandidateAnswer[]");
-  const questions = await generateScreeningQuestions(validVacancy, validProfile);
+  const validQuestions = questions
+    ? parseWithSchema(ScreeningQuestionsSchema, questions, "ScreeningQuestion[]")
+    : [];
   const signals = await extractCandidateSignals(validVacancy, validProfile, validAnswers);
   const rankResult = rankCandidate(validVacancy, signals);
 
   return {
     profile: validProfile,
-    questions,
+    questions: validQuestions,
     signals,
     rankResult
   };

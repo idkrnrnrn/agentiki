@@ -62,6 +62,7 @@ const server = createServer(async (req, res) => {
       const result = await rankScreenedCandidate({
         vacancy: body.vacancy,
         profile: body.profile,
+        questions: body.questions,
         answers: body.answers
       });
 

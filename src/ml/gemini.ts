@@ -14,7 +14,8 @@ import {
 import {
   createMockCandidateProfile,
   createMockCandidateSignals,
-  createMockQuestions
+  createMockQuestions,
+  neutralCandidateReply
 } from "./mock.ts";
 import type {
   CandidateAnswer,
@@ -124,11 +125,16 @@ export async function extractCandidateSignals(
     return createMockCandidateSignals(vacancy, profile, answers);
   }
 
-  return generateValidatedJson({
+  const signals = await generateValidatedJson({
     prompt: candidateSignalsPrompt(vacancy, profile, answers),
     schema: CandidateSignalsSchema,
     label: "CandidateSignals"
   });
+
+  return {
+    ...signals,
+    neutralCandidateReply
+  };
 }
 
 function extractText(payload: unknown): string {

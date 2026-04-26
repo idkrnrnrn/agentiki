@@ -12,6 +12,27 @@ npm run dev
 
 Dashboard: http://127.0.0.1:3000
 
+## Docker Compose
+
+Перед запуском должен быть включен Docker Desktop.
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+После запуска:
+
+```text
+http://127.0.0.1:3000
+```
+
+Остановить:
+
+```bash
+docker compose down
+```
+
 Для работы с Gemini:
 
 ```bash
@@ -79,6 +100,7 @@ npm test      # unit tests для rankCandidate
 {
   "vacancy": {},
   "profile": {},
+  "questions": [],
   "answers": [
     { "questionId": "q1", "answer": "..." }
   ]

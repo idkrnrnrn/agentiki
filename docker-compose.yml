@@ -1,0 +1,15 @@
+services:
+  screening:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agentiki-screening
+    env_file:
+      - .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3-flash-preview}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

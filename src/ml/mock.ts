@@ -12,6 +12,9 @@ import {
   demoVacancy
 } from "./demoData.ts";
 
+export const neutralCandidateReply =
+  "Спасибо за ответы! Мы передали вашу анкету рекрутеру. Если профиль подойдёт под требования вакансии, с вами свяжутся для следующего этапа.";
+
 export function createMockCandidateProfile(pdfText: string): CandidateProfile {
   const text = pdfText.trim();
   if (!text) {
@@ -196,7 +199,7 @@ export function createMockCandidateSignals(
       ? [{ role: "Помощник торгового зала", reason: "Меньше требований к кассе и первичной коммуникации." }]
       : [],
     modelRecommendation: failedReasons.length ? "manual_review" : "invite_to_interview",
-    neutralCandidateReply: demoCandidateSignals.neutralCandidateReply
+    neutralCandidateReply
   };
 }
 

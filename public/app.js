@@ -97,6 +97,7 @@ async function rankCandidate() {
     const result = await apiPost("/api/rank-candidate", {
       vacancy,
       profile: currentProfile,
+      questions: currentQuestions,
       answers
     });
 
